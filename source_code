@@ -1,0 +1,77 @@
+14 a)
+
+Write a script called “nested-loops.sh” that takes in 3 arguments (I, J, and K), each with numerical values, which then will implement 3 nested for loops that iterate from 0 to I, J, and K. You should test the input arguments that they are integers, and that they are a positive number; if they are not, the script should exit with the appropriate error message. If there are more, or less arguments than the required 3 arguments, the script should again fail with the appropriate message.
+
+#!/bin/bash
+
+usage="./loop1 3 3 3"
+
+if [ $# -ne 3 ];then
+  echo "Three arguments required"
+  echo "Usage:$usage"
+  exit 1
+fi
+
+if [[ $1 =~ ^[0-9]+$ ]]; then
+  echo ""
+else
+  echo $1 is not a positive integer
+  exit 1
+fi
+
+if [[ $2 =~ ^[0-9]+$ ]]; then
+  echo ""
+else
+  echo $2 is not a positive integer
+  exit 1
+fi
+
+if [[ $3 =~ ^[0-9]+$ ]]; then
+  echo ""
+else
+  echo $3 is not a positive integer
+  exit 1
+fi
+
+for i in $(seq 1 $1)
+  do
+    for j in $(seq 1 $2)
+      do
+        for k in $(seq 1 $3)
+          do
+            echo $i,$j,$k
+          done
+      done
+  done
+
+14 b)Write a script called “disk-benchmark-background.sh” that uses the dd command to run a benchmark against the local disk in the background, that captures all the output (both standard out and error output) to a file “disk-benchmark-background-log.txt”. Use the “time” command to show how long the benchmark took to complete. The benchmark should run for at least 10 seconds, and it should complete even if the ssh (or bash) session is terminated.
+
+nohup time dd if=/dev/zero of=/file123 bs=1G count=3 oflag=dsync 2>&1 | tee dd_log &
+
+14 c)Write a script called “network-test.sh” that takes input a file “network-test-machine-list.txt” with a list of DNS names (e.g. google.com, iit.edu, anl.gov), each name on a separate line, and runs the ping utility collecting 3 samples from each DNS name, and writing the RTT (round trip time) average latency into a file “network-test-latency.txt” where each line will have the DNS name and average RTT separated by a space. Make sure it works with at least 10 DNS names, but it should work for an unspecified number of DNS names.
+
+#!/bin/bash
+
+cat /dev/null > network-test-latency.txt
+
+while read f
+do
+  ping -c 3 $f > tempfile
+  last_line=$(wc -l < tempfile)
+  count=1
+  while read f1
+    do
+     if [ $count -eq $last_line ]; then
+       echo "last line is $f1"
+       if [[ $f1 =~ (^[a-z]+ [a-z]+/[a-z]+/[a-z]+/[a-z]+ = [0-9]+\.[0-9]+/([0-9]+\.[0-9]+)) ]];then
+         echo $f ${BASH_REMATCH[2]} >> network-test-latency.txt
+       fi
+     fi
+     count=$(expr $count + 1)
+    done < tempfile
+done < network-test-machine-list.txt
+
+14 d)Write a script using Ploticus or Matplotlib (pick one) to generate a graph of the “network-test-latency.txt” data. The graph should automatically adjust to the number of entries, and the scale of the data.
+
+ploticus -prefab vbars  data=network-test-latency.txt  x=1 y=2
+
